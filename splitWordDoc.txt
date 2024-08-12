@@ -1,0 +1,30 @@
+//Split document to files
+
+Sub SplitDocumentByPages()
+    Dim doc As Document
+    Dim newDoc As Document
+    Dim pageRange As Range
+    Dim pageNum As Integer
+    Dim folderPath As String
+    Dim dlg As FileDialog
+    
+    Set doc = ActiveDocument
+    Set dlg = Application.FileDialog(msoFileDialogFolderPicker)
+    
+    If dlg.Show = -1 Then
+        folderPath = dlg.SelectedItems(1)
+    Else
+        Exit Sub
+    End If
+    
+    For pageNum = 1 To doc.ComputeStatistics(wdStatisticPages)
+        Set pageRange = doc.GoTo(What:=wdGoToPage, Which:=wdGoToAbsolute, Count:=pageNum)
+        pageRange.End = doc.GoTo(What:=wdGoToPage, Which:=wdGoToAbsolute, Count:=pageNum + 1).Start
+        pageRange.End = pageRange.End - 1
+        
+        Set newDoc = Documents.Add
+        newDoc.Content.FormattedText = pageRange.FormattedText
+        newDoc.SaveAs2 FileName:=folderPath & "\Page_" & pageNum & ".docx"
+        newDoc.Close
+    Next pageNum
+End Sub
